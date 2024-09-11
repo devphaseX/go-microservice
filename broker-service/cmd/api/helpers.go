@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -12,12 +14,23 @@ type jsonResponse struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-func readJSON(w http.ResponseWriter, data any) error {
+func readJSON(w http.ResponseWriter, r *http.Request, data any) error {
 	maxReadByteLimit := 1048576
 
-	reader := http.MaxBytesReader(w, nil, int64(maxReadByteLimit))
+	r.Body = http.MaxBytesReader(w, r.Body, int64(maxReadByteLimit))
+	dec := json.NewDecoder(r.Body)
+	err := dec.Decode(data)
 
-	return json.NewDecoder(reader).Decode(data)
+	if err != nil {
+		return err
+	}
+	err = dec.Decode(struct{}{})
+
+	if err != io.EOF {
+		return errors.New("body must have only a single JSON value")
+	}
+
+	return nil
 }
 
 func writeJson(w http.ResponseWriter, statusCode int, data any, headers ...http.Header) error {
@@ -38,4 +51,18 @@ func writeJson(w http.ResponseWriter, statusCode int, data any, headers ...http.
 
 	_, err = w.Write(b)
 	return err
+}
+
+func (app *Config) errorJSON(w http.ResponseWriter, err error, status ...int) error {
+	statusCode := http.StatusInternalServerError
+
+	if len(status) > 0 {
+		statusCode = status[0]
+	}
+
+	var payload jsonResponse
+	payload.Error = true
+	payload.Message = err.Error()
+
+	return writeJson(w, statusCode, payload)
 }
