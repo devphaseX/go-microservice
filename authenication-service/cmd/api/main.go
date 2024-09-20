@@ -12,20 +12,47 @@ import (
 
 const (
 	lnAddr          = "80"
+	symmetricKey    = ""
 	dbMaxRetryCount = 10
 )
 
-type Config struct{}
+type Config struct {
+	tokenMaker TokenMaker
+	env        *AppEnvConfig
+}
+
+func newConfig(env *AppEnvConfig) (*Config, error) {
+	pasetoMaker, err := NewPasetoMaker(env.SymmetricKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &Config{
+		tokenMaker: pasetoMaker,
+		env:        env,
+	}, nil
+}
 
 func main() {
-	config := &Config{}
+	appEnvConfig, err := LoanEnv("../../")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	config, err := newConfig(appEnvConfig)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	srv := &http.Server{
-		Addr:    lnAddr,
+		Addr:    appEnvConfig.Addr,
 		Handler: config.routes(),
 	}
 
-	err := srv.ListenAndServe()
-
+	err = srv.ListenAndServe()
 	if err != nil {
 		log.Panic(err)
 	}
