@@ -43,3 +43,17 @@ stop:
 	@echo "Stopping front end..."
 	@-pkill -SIGTERM -f "./${FRONT_END_BINARY}"
 	@echo "Stopped front end!"
+
+
+db_sqlc_auth:
+	@echo "running sqlc"
+	cd ./authenication-service && sqlc generate
+	@echo "complete sqlc generation"
+
+new_auth_migration:
+	@echo "running auth migration"
+	cd ./authenication-service &&  migrate create -ext sql -dir db/migrations -seq ${name}
+	@echo "auth migration done"
+
+
+.PHONY: db_auth_generate
