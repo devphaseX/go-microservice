@@ -3,8 +3,9 @@ package main
 import "github.com/spf13/viper"
 
 type AppEnvConfig struct {
-	Addr         string `mapstructure:"LISTEN_ADDR"`
-	SymmetricKey string `mapstructure:"SYMMETRIC_KEY"`
+	Addr            string `mapstructure:"LISTEN_ADDR"`
+	SymmetricKey    string `mapstructure:"SYMMETRIC_KEY"`
+	DbMaxRetryCount int    `mapstructure:"DB_MAX_RETRY_COUNT"`
 }
 
 func LoanEnv(path string) (envConfig *AppEnvConfig, err error) {

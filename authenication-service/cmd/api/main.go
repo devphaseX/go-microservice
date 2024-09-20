@@ -10,12 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const (
-	lnAddr          = "80"
-	symmetricKey    = ""
-	dbMaxRetryCount = 10
-)
-
 type Config struct {
 	tokenMaker TokenMaker
 	env        *AppEnvConfig
@@ -78,7 +72,7 @@ func openDB(DbSource string) (*pgxpool.Pool, error) {
 	return conn, err
 }
 
-func connect(DbSource string) *pgxpool.Pool {
+func connect(DbSource string, dbMaxRetryCount int) *pgxpool.Pool {
 	dbFailRetryAttemptCount := 0
 
 	for {
