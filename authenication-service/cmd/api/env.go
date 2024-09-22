@@ -6,6 +6,7 @@ type AppEnvConfig struct {
 	Addr            string `mapstructure:"LISTEN_ADDR"`
 	SymmetricKey    string `mapstructure:"SYMMETRIC_KEY"`
 	DbMaxRetryCount int    `mapstructure:"DB_MAX_RETRY_COUNT"`
+	DbSource        string `mapstructure:"DB_SOURCE"`
 }
 
 func LoanEnv(path string) (envConfig *AppEnvConfig, err error) {

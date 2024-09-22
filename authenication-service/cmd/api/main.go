@@ -7,15 +7,17 @@ import (
 	"net/http"
 	"time"
 
+	db "github.com/devphaseX/go-microservice/authenication-service/db/sqlc"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Config struct {
 	tokenMaker TokenMaker
 	env        *AppEnvConfig
+	store      db.Store
 }
 
-func newConfig(env *AppEnvConfig) (*Config, error) {
+func newConfig(store db.Store, env *AppEnvConfig) (*Config, error) {
 	pasetoMaker, err := NewPasetoMaker(env.SymmetricKey)
 
 	if err != nil {
@@ -23,6 +25,7 @@ func newConfig(env *AppEnvConfig) (*Config, error) {
 	}
 
 	return &Config{
+		store:      store,
 		tokenMaker: pasetoMaker,
 		env:        env,
 	}, nil
@@ -35,7 +38,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	config, err := newConfig(appEnvConfig)
+	dbConn := connect(appEnvConfig.DbSource, appEnvConfig.DbMaxRetryCount)
+	config, err := newConfig(db.NewStore(dbConn), appEnvConfig)
 
 	if err != nil {
 		log.Fatal(err)
