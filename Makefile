@@ -50,10 +50,19 @@ db_sqlc_auth:
 	cd ./authenication-service && sqlc generate
 	@echo "complete sqlc generation"
 
-new_auth_migration:
+create_auth_migration:
 	@echo "running auth migration"
 	cd ./authenication-service &&  migrate create -ext sql -dir db/migrations -seq ${name}
 	@echo "auth migration done"
+
+createdb:
+	docker exec -it postgres-container createdb --username=postgres --owner=postgres ${name}
+
+dropdb:
+	docker exec -it postgres-container dropdb --username=postgres ${name} -f
+
+migrate_auth_db:
+	 cd ./authenication-service &&	migrate -path db/migrations/ -database "postgresql://postgres:password@localhost:5432/service_auth?sslmode=disable" -verbose up
 
 
 .PHONY: db_auth_generate
