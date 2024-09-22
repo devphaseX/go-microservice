@@ -9,6 +9,7 @@ var (
 	ErrBadRequest      = errors.New("Bad Request")
 	ErrInternalFailure = errors.New("Internal failure")
 	ErrNotFound        = errors.New("Not found")
+	ErrUnauthorized    = errors.New("unauthorized")
 )
 
 type Error struct {
@@ -59,6 +60,9 @@ func FromError(err error) ApiError {
 
 		case ErrNotFound:
 			apiError.Status = http.StatusNotFound
+
+		case ErrUnauthorized:
+			apiError.Status = http.StatusUnauthorized
 
 		default:
 			apiError.Status = http.StatusInternalServerError

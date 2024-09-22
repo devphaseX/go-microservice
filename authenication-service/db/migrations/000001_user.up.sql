@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     first_name varchar(255),
     last_name varchar(255),
     password varchar(60) NOT NULL,
+    password_salt varchar(60) NOT NULL,
     user_active boolean DEFAULT false,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP

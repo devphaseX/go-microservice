@@ -1,12 +1,18 @@
 package main
 
-import "github.com/spf13/viper"
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
 
 type AppEnvConfig struct {
-	Addr            string `mapstructure:"LISTEN_ADDR"`
-	SymmetricKey    string `mapstructure:"SYMMETRIC_KEY"`
-	DbMaxRetryCount int    `mapstructure:"DB_MAX_RETRY_COUNT"`
-	DbSource        string `mapstructure:"DB_SOURCE"`
+	Addr             string        `mapstructure:"LISTEN_ADDR"`
+	SymmetricKey     string        `mapstructure:"SYMMETRIC_KEY"`
+	DbMaxRetryCount  int           `mapstructure:"DB_MAX_RETRY_COUNT"`
+	DbSource         string        `mapstructure:"DB_SOURCE"`
+	AccessTokenTime  time.Duration `mapstructure:"ACCESS_TOKEN_TIME"`
+	RefreshTokenTime time.Duration `mapstructure:"REFRESH_TOKEN_TIME"`
 }
 
 func LoanEnv(path string) (envConfig *AppEnvConfig, err error) {

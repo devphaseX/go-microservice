@@ -22,7 +22,7 @@ INSERT INTO Users (
     $2,
     $3,
     $4
-) RETURNING id, email, first_name, last_name, password, user_active, created_at, updated_at
+) RETURNING id, email, first_name, last_name, password, password_salt, user_active, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -46,6 +46,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.FirstName,
 		&i.LastName,
 		&i.Password,
+		&i.PasswordSalt,
 		&i.UserActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -57,7 +58,7 @@ const deleteUserByUnqiueID = `-- name: DeleteUserByUnqiueID :one
 DELETE FROM Users
 WHERE $1 = id OR
       $2 ilike email
-RETURNING id, email, first_name, last_name, password, user_active, created_at, updated_at
+RETURNING id, email, first_name, last_name, password, password_salt, user_active, created_at, updated_at
 `
 
 type DeleteUserByUnqiueIDParams struct {
@@ -74,6 +75,7 @@ func (q *Queries) DeleteUserByUnqiueID(ctx context.Context, arg DeleteUserByUnqi
 		&i.FirstName,
 		&i.LastName,
 		&i.Password,
+		&i.PasswordSalt,
 		&i.UserActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -85,7 +87,7 @@ const deleteUsers = `-- name: DeleteUsers :many
 DELETE FROM Users
 WHERE ($1::uuid[] IS NOT NULL AND id = ANY($1::uuid[])) OR
       ($2::text[] IS NOT NULL AND email = ANY($2::text[]))
-RETURNING id, email, first_name, last_name, password, user_active, created_at, updated_at
+RETURNING id, email, first_name, last_name, password, password_salt, user_active, created_at, updated_at
 `
 
 type DeleteUsersParams struct {
@@ -108,6 +110,7 @@ func (q *Queries) DeleteUsers(ctx context.Context, arg DeleteUsersParams) ([]Use
 			&i.FirstName,
 			&i.LastName,
 			&i.Password,
+			&i.PasswordSalt,
 			&i.UserActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -124,7 +127,7 @@ func (q *Queries) DeleteUsers(ctx context.Context, arg DeleteUsersParams) ([]Use
 
 const getAll = `-- name: GetAll :many
 
-SELECT id, email, first_name, last_name, password, user_active, created_at, updated_at FROM Users
+SELECT id, email, first_name, last_name, password, password_salt, user_active, created_at, updated_at FROM Users
 OFFSET $1
 LIMIT $2
 `
@@ -149,6 +152,7 @@ func (q *Queries) GetAll(ctx context.Context, arg GetAllParams) ([]User, error) 
 			&i.FirstName,
 			&i.LastName,
 			&i.Password,
+			&i.PasswordSalt,
 			&i.UserActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -164,7 +168,7 @@ func (q *Queries) GetAll(ctx context.Context, arg GetAllParams) ([]User, error) 
 }
 
 const getUserByUnqiueID = `-- name: GetUserByUnqiueID :one
-SELECT id, email, first_name, last_name, password, user_active, created_at, updated_at FROM Users
+SELECT id, email, first_name, last_name, password, password_salt, user_active, created_at, updated_at FROM Users
 WHERE $1 = id or $2 ilike email
 LIMIT 1
 `
@@ -183,6 +187,7 @@ func (q *Queries) GetUserByUnqiueID(ctx context.Context, arg GetUserByUnqiueIDPa
 		&i.FirstName,
 		&i.LastName,
 		&i.Password,
+		&i.PasswordSalt,
 		&i.UserActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -196,7 +201,7 @@ SET first_name = $1,
     last_name = $2,
     user_active = $3
 WHERE id = $4
-RETURNING id, email, first_name, last_name, password, user_active, created_at, updated_at
+RETURNING id, email, first_name, last_name, password, password_salt, user_active, created_at, updated_at
 `
 
 type UpdateUserParams struct {
@@ -220,6 +225,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.FirstName,
 		&i.LastName,
 		&i.Password,
+		&i.PasswordSalt,
 		&i.UserActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -231,7 +237,7 @@ const updateUserEmail = `-- name: UpdateUserEmail :one
 UPDATE Users
 SET email = $1
 WHERE id = $2
-RETURNING id, email, first_name, last_name, password, user_active, created_at, updated_at
+RETURNING id, email, first_name, last_name, password, password_salt, user_active, created_at, updated_at
 `
 
 type UpdateUserEmailParams struct {
@@ -248,6 +254,7 @@ func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams
 		&i.FirstName,
 		&i.LastName,
 		&i.Password,
+		&i.PasswordSalt,
 		&i.UserActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,

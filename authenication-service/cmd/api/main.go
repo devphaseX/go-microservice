@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -15,28 +16,32 @@ type Config struct {
 	tokenMaker TokenMaker
 	env        *AppEnvConfig
 	store      db.Store
+	hash       *Argon2idHash
 }
 
 func newConfig(store db.Store, env *AppEnvConfig) (*Config, error) {
 	pasetoMaker, err := NewPasetoMaker(env.SymmetricKey)
-
 	if err != nil {
 		return nil, err
 	}
 
+	hash := DefaultArgonHash()
 	return &Config{
 		store:      store,
 		tokenMaker: pasetoMaker,
 		env:        env,
+		hash:       hash,
 	}, nil
 }
 
 func main() {
-	appEnvConfig, err := LoanEnv("../../")
+	appEnvConfig, err := LoanEnv(".")
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println(appEnvConfig)
 
 	dbConn := connect(appEnvConfig.DbSource, appEnvConfig.DbMaxRetryCount)
 	config, err := newConfig(db.NewStore(dbConn), appEnvConfig)
@@ -46,9 +51,11 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:    appEnvConfig.Addr,
+		Addr:    fmt.Sprintf(":%s", appEnvConfig.Addr),
 		Handler: config.routes(),
 	}
+
+	fmt.Printf("server listening on port: %s", appEnvConfig.Addr)
 
 	err = srv.ListenAndServe()
 	if err != nil {
