@@ -14,12 +14,14 @@ INSERT INTO Users (
     first_name,
     last_name,
     email,
-    password
+    password,
+    password_salt
 ) VALUES (
     sqlc.arg('first_name'),
     sqlc.arg('last_name'),
     sqlc.arg('email'),
-    sqlc.arg('password')
+    sqlc.arg('password'),
+    sqlc.arg('password_salt')
 ) RETURNING *;
 
 -- name: UpdateUser :one

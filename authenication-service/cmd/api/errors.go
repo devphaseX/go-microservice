@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrBadRequest      = errors.New("Bad Request")
+	ErrConflictRequest = errors.New("conflict request")
 	ErrInternalFailure = errors.New("Internal failure")
 	ErrNotFound        = errors.New("Not found")
 	ErrUnauthorized    = errors.New("unauthorized")

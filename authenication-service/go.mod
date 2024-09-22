@@ -14,6 +14,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/o1egl/paseto v1.0.0
 	github.com/spf13/viper v1.19.0
+	golang.org/x/crypto v0.27.0
 )
 
 require (
@@ -38,7 +39,6 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect
