@@ -32,10 +32,10 @@ type LogEntry struct {
 	UpdatedAt time.Time `bson:"updated_at" json:"updated_at"`
 }
 
-func (l *LogEntry) Insert(entry LogEntry) error {
+func (l *LogEntry) Insert(entry *LogEntry) error {
 	collection := client.Database("logs").Collection("logs")
 
-	_, err := collection.InsertOne(context.TODO(), LogEntry{
+	insertedRes, err := collection.InsertOne(context.TODO(), LogEntry{
 		Name:      entry.Name,
 		Data:      entry.Data,
 		CreatedAt: time.Now(),
@@ -47,6 +47,7 @@ func (l *LogEntry) Insert(entry LogEntry) error {
 		return err
 	}
 
+	entry.ID = insertedRes.InsertedID.(primitive.ObjectID).String()
 	return nil
 }
 
@@ -127,4 +128,31 @@ func (l *LogEntry) DropCollection() error {
 	}
 
 	return nil
+}
+
+func (l *LogEntry) Update(data LogEntry) (*mongo.UpdateResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+
+	defer cancel()
+
+	collection := client.Database("logs").Collection("logs")
+
+	docID, err := primitive.ObjectIDFromHex(data.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	updateRes, err := collection.UpdateOne(ctx, bson.M{"_id": docID}, bson.D{
+		bson.E{Key: "$set", Value: bson.D{
+			bson.E{Key: "name", Value: data.Name},
+			bson.E{Key: "data", Value: data.Data},
+			bson.E{Key: "updated_at", Value: time.Now()},
+		}}})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return updateRes, nil
 }
