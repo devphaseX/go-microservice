@@ -6,3 +6,5 @@
 
 # Ignore any file with .env in its name
 **/*.env
+
+_projects/

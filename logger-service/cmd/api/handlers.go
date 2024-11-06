@@ -29,5 +29,5 @@ func (app *Config) WriteLog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.successJSON(w, http.StatusCreated, event, nil, "event created")
+	app.successJSON(w, http.StatusCreated, nil, nil, "logged")
 }
