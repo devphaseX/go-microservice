@@ -62,6 +62,9 @@ func FromError(err error) ApiError {
 		case ErrNotFound:
 			apiError.Status = http.StatusNotFound
 
+		case ErrConflictRequest:
+			apiError.Status = http.StatusConflict
+
 		case ErrUnauthorized:
 			apiError.Status = http.StatusUnauthorized
 

@@ -1,5 +1,6 @@
 FRONT_END_BINARY=frontApp
 BROKER_BINARY=brokerApp
+AUTH_BINARY=AuthApp
 
 ## up: starts all containers in the background without forcing build
 up:
@@ -33,10 +34,21 @@ build_front:
 	cd ./front-end && env CGO_ENABLED=0 go build -o ${FRONT_END_BINARY} ./cmd/web
 	@echo "Done!"
 
+## build_front: builds the frone end binary
+build_auth:
+	@echo "Building Auth service binary..."
+	cd ./authenication-service && env CGO_ENABLED=0 go build -o ${AUTH_BINARY} ./cmd/api
+	@echo "Done!"
+
+
 ## start: starts the front end
 start: build_front
 	@echo "Starting front end"
-	cd ./front-end && ./${FRONT_END_BINARY} &
+	cd ./front-end && ./${FRONT_END_BINARY}
+
+start_auth: build_auth
+	@echo "starting auth server..."
+	cd ./authenication-service && ./${AUTH_BINARY}
 
 ## stop: stop the front end
 stop:

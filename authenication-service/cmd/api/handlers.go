@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -130,6 +131,7 @@ func (c *Config) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	hashSalt, err := c.hash.GenerateHash([]byte(registerUserParams.Password), nil)
 
 	if err != nil {
+		fmt.Println("hash salt err", err)
 		c.errorJSON(w, NewError(errors.New("failed to create user"), ErrInternalFailure))
 		return
 	}
@@ -160,6 +162,8 @@ func (c *Config) RegisterUser(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
+		fmt.Println("db err", err)
+
 		c.errorJSON(w, NewError(errors.New("failed to create user"), ErrInternalFailure))
 		return
 	}

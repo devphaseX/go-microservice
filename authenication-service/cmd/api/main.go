@@ -41,8 +41,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(appEnvConfig)
-
 	dbConn := connect(appEnvConfig.DbSource, appEnvConfig.DbMaxRetryCount)
 	config, err := newConfig(db.NewStore(dbConn), appEnvConfig)
 
