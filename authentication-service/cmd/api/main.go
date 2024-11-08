@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	db "github.com/devphaseX/go-microservice/authenication-service/db/sqlc"
+	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -101,4 +105,70 @@ func connect(DbSource string, dbMaxRetryCount int) *pgxpool.Pool {
 
 		return nil
 	}
+}
+
+func createDatabase(config *Config) error {
+	// Connect to postgres database to create new database
+	db, err := sql.Open("postgres", config.env.DbSource)
+	if err != nil {
+		return fmt.Errorf("error connecting to postgres: %v", err)
+	}
+	defer db.Close()
+
+	// Check if database exists
+	var exists bool
+	query := fmt.Sprintf("SELECT EXISTS(SELECT datname FROM pg_catalog.pg_database WHERE datname = '%s')", config.env.DbName)
+	err = db.QueryRow(query).Scan(&exists)
+	if err != nil {
+		return fmt.Errorf("error checking if database exists: %v", err)
+	}
+
+	if !exists {
+		// Create database if it doesn't exist
+		_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s", config.env.DbName))
+		if err != nil {
+			return fmt.Errorf("error creating database: %v", err)
+		}
+		log.Printf("Database %s created successfully", config.env.DbName)
+	} else {
+		log.Printf("Database %s already exists", config.env.DbName)
+	}
+
+	return nil
+}
+
+func runMigrations(config *Config) error {
+	// Connect to the newly created database
+	db, err := sql.Open("postgres", config.env.DbSource)
+	if err != nil {
+		return fmt.Errorf("error connecting to database: %v", err)
+	}
+
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		return fmt.Errorf("error creating migration driver: %v", err)
+	}
+
+	// Check if migrations directory exists
+	if _, err := os.Stat(config.env.MigrationsPath); os.IsNotExist(err) {
+		return fmt.Errorf("migrations directory does not exist: %s", config.env.MigrationsPath)
+	}
+
+	// Initialize migrations
+	m, err := migrate.NewWithDatabaseInstance(
+		fmt.Sprintf("file://%s", config.env.MigrationsPath),
+		"postgres",
+		driver,
+	)
+	if err != nil {
+		return fmt.Errorf("error creating migration instance: %v", err)
+	}
+
+	// Run migrations
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("error running migrations: %v", err)
+	}
+
+	log.Println("Migrations completed successfully")
+	return nil
 }

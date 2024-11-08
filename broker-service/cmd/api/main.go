@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 const listenAddres = "5001"
 
-type Config struct{}
+type Config struct {
+}
 
 func main() {
 
