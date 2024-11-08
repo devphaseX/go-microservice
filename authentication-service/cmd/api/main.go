@@ -7,13 +7,18 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+
 	db "github.com/devphaseX/go-microservice/authenication-service/db/sqlc"
-	"github.com/golang-migrate/migrate"
-	"github.com/golang-migrate/migrate/database/postgres"
+	// This import is required for the file:// source driver
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/lib/pq"
 )
 
 type Config struct {
@@ -43,6 +48,14 @@ func main() {
 
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if err := createDatabase(appEnvConfig); err != nil {
+		log.Panic("failed to create db", err)
+	}
+
+	if err := runMigrations(appEnvConfig); err != nil {
+		log.Panic(err)
 	}
 
 	dbConn := connect(appEnvConfig.DbSource, appEnvConfig.DbMaxRetryCount)
@@ -107,9 +120,18 @@ func connect(DbSource string, dbMaxRetryCount int) *pgxpool.Pool {
 	}
 }
 
-func createDatabase(config *Config) error {
+func createDatabase(config *AppEnvConfig) error {
 	// Connect to postgres database to create new database
-	db, err := sql.Open("postgres", config.env.DbSource)
+	// Modify connection string to connect to 'postgres' database instead
+	connURL, err := url.Parse(config.DbSource)
+	if err != nil {
+		return fmt.Errorf("error parsing DB source URL: %v", err)
+	}
+
+	// Override the database name to connect to postgres
+	connURL.Path = "/postgres"
+	db, err := sql.Open("postgres", connURL.String())
+
 	if err != nil {
 		return fmt.Errorf("error connecting to postgres: %v", err)
 	}
@@ -117,7 +139,8 @@ func createDatabase(config *Config) error {
 
 	// Check if database exists
 	var exists bool
-	query := fmt.Sprintf("SELECT EXISTS(SELECT datname FROM pg_catalog.pg_database WHERE datname = '%s')", config.env.DbName)
+	query := fmt.Sprintf("SELECT EXISTS(SELECT datname FROM pg_catalog.pg_database WHERE datname = '%s')", config.DbName)
+	fmt.Print(query)
 	err = db.QueryRow(query).Scan(&exists)
 	if err != nil {
 		return fmt.Errorf("error checking if database exists: %v", err)
@@ -125,21 +148,21 @@ func createDatabase(config *Config) error {
 
 	if !exists {
 		// Create database if it doesn't exist
-		_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s", config.env.DbName))
+		_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s", config.DbName))
 		if err != nil {
 			return fmt.Errorf("error creating database: %v", err)
 		}
-		log.Printf("Database %s created successfully", config.env.DbName)
+		log.Printf("Database %s created successfully", config.DbName)
 	} else {
-		log.Printf("Database %s already exists", config.env.DbName)
+		log.Printf("Database %s already exists", config.DbName)
 	}
 
 	return nil
 }
 
-func runMigrations(config *Config) error {
+func runMigrations(config *AppEnvConfig) error {
 	// Connect to the newly created database
-	db, err := sql.Open("postgres", config.env.DbSource)
+	db, err := sql.Open("postgres", config.DbSource)
 	if err != nil {
 		return fmt.Errorf("error connecting to database: %v", err)
 	}
@@ -150,13 +173,13 @@ func runMigrations(config *Config) error {
 	}
 
 	// Check if migrations directory exists
-	if _, err := os.Stat(config.env.MigrationsPath); os.IsNotExist(err) {
-		return fmt.Errorf("migrations directory does not exist: %s", config.env.MigrationsPath)
+	if _, err := os.Stat(config.MigrationsPath); os.IsNotExist(err) {
+		return fmt.Errorf("migrations directory does not exist: %s", config.MigrationsPath)
 	}
 
 	// Initialize migrations
 	m, err := migrate.NewWithDatabaseInstance(
-		fmt.Sprintf("file://%s", config.env.MigrationsPath),
+		fmt.Sprintf("file://%s", config.MigrationsPath),
 		"postgres",
 		driver,
 	)
