@@ -9,6 +9,8 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+    networks:
+      - auth-network
 
   logger-service:
     build:
@@ -27,7 +29,7 @@ services:
       dockerfile: ./authentication-service.dockerfile
     restart: always
     ports:
-      - "8083:8080"
+      - "8083:80"
     deploy:
       mode: replicated
       replicas: 1

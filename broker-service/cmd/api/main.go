@@ -8,7 +8,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-const listenAddres = "5001"
+const listenAddres = "80"
 
 type Config struct {
 }

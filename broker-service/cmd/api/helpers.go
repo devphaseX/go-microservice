@@ -52,7 +52,7 @@ func writeJson(w http.ResponseWriter, statusCode int, data any, headers ...http.
 	return err
 }
 
-func (app *Config) errorJSON(w http.ResponseWriter, err error, status ...int) error {
+func (app *Config) errorJSON(w http.ResponseWriter, err any, status ...int) error {
 	statusCode := http.StatusInternalServerError
 
 	if len(status) > 0 {
@@ -61,7 +61,12 @@ func (app *Config) errorJSON(w http.ResponseWriter, err error, status ...int) er
 
 	var payload jsonResponse
 	payload.Error = true
-	payload.Message = err.Error()
+
+	if errValue, ok := err.(error); ok {
+		payload.Message = errValue.Error()
+	} else {
+		payload.Data = err
+	}
 
 	return writeJson(w, statusCode, payload)
 }
