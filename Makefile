@@ -37,7 +37,7 @@ build_logger:
 
 
 ## build_front: builds the auth binary
-build_auth: createdb name=service_auth migrate_auth_db
+build_auth:
 	@echo "Building Auth service binary..."
 	cd ./authentication-service && env CGO_ENABLED=0 go build -o ${AUTH_BINARY} ./cmd/api
 	@echo "Done!"
@@ -45,7 +45,7 @@ build_auth: createdb name=service_auth migrate_auth_db
 ## build_front: builds the frone end binary
 build_front:
 	@echo "Building front end binary..."
-	cd ./front-end && env CGO_ENABLED=0 go build -o ${FRONT_END_BINARY} ./cmd/web
+	cd ./front-end && rm ${FRONT_END_BINARY} && env CGO_ENABLED=0 go build -o ${FRONT_END_BINARY} ./cmd/web
 	@echo "Done!"
 
 
@@ -82,7 +82,7 @@ dropdb:
 	docker exec -it postgres dropdb --username=postgres ${name} -f
 
 migrate_auth_db:
-	 cd ./authenication-service &&	migrate -path db/migrations/ -database "postgresql://postgres:password@localhost:5432/service_auth?sslmode=disable" -verbose up
+	cd ./authenication-service &&	migrate -path db/migrations/ -database "postgresql://postgres:password@localhost:5432/service_auth?sslmode=disable" -verbose up
 
 
 .PHONY: db_auth_generate

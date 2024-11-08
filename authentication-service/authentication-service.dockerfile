@@ -6,6 +6,8 @@ WORKDIR /app
 
 COPY app.env /app
 
+COPY ./db/migrations  /app/db/migrations
+
 COPY authApp /app
 
-CMD [ "./authApp"]
+CMD [ "/app/authApp"]

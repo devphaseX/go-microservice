@@ -5,7 +5,7 @@ services:
       dockerfile: ./broker-service.dockerfile
     restart: always
     ports:
-      - "8080:80"
+      - "8081:80"
     deploy:
       mode: replicated
       replicas: 1
@@ -15,6 +15,8 @@ services:
       context: ./logger-service
       dockerfile: ./logger-service.dockerfile
     restart: always
+    ports:
+      - "8082:80"
     deploy:
       mode: replicated
       replicas: 1
@@ -25,12 +27,14 @@ services:
       dockerfile: ./authentication-service.dockerfile
     restart: always
     ports:
-      - "8081:80"
+      - "8083:8080"
     deploy:
       mode: replicated
       replicas: 1
     environment:
       DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
+    networks:
+      - auth-network
 
   postgres:
     image: "postgres:17.0-alpine"
@@ -46,6 +50,8 @@ services:
       POSTGRES_DB: users
     volumes:
       - ./_projects/db-data/postgres/:/var/lib/postgresql/data/
+    networks:
+      - auth-network
 
   mongo:
     image: "mongo:8.0.3-noble"
@@ -57,3 +63,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - ./_projects/db-data/mongo/:/data/db
+      # Add this to remove containers and images when done
+
+networks:
+  auth-network:
+    driver: bridge

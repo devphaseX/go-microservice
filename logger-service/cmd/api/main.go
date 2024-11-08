@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	webPort  = "80"
+	webPort  = "8082"
 	rpcPort  = "5001"
 	mongoURL = "mongodb://mongo:27017"
 	gRpcPort = "50001"
@@ -64,6 +64,7 @@ func (app *Config) serve() {
 		Handler: routes,
 	}
 
+	fmt.Println(fmt.Sprintf("server listenining on port: %s", webPort))
 	err := srv.ListenAndServe()
 	if err != nil {
 		log.Panic(err)
